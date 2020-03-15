@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.phisuite.data";
+option java_outer_classname = "ProcessProto";
+
+package data;
+
+import "google/protobuf/any.proto";
+import "common.proto";
+import "event.proto";
+import "entity.proto";
+
+message Process {
+    string id = 1;
+    string name = 2;
+    string version = 3;
+    string transaction = 4;
+    string started = 5;
+    string completed = 6;
+
+    message Payload {
+        Event event = 1;
+        Entity entity = 2;
+    }
+    message Error {
+        string code = 1;
+        string message = 2;
+        Event event = 3;
+    }
+    Payload in = 10;
+    Payload out = 11;
+    Error error = 12;
+}
+
+message ProcessRequest {
+    string name = 1;
+    string version = 2;
+    string transaction = 3;
+    map<string, google.protobuf.Any> event = 10;
+    map<string, google.protobuf.Any> entity = 11;
+}
+
+message ProcessResponse {
+    string id = 1;
+    map<string, google.protobuf.Any> event = 10;
+    map<string, google.protobuf.Any> entity = 11;
+}
+
+service ProcessAPI {
+    rpc Execute(stream ProcessRequest) returns (stream ProcessResponse);
+    rpc Record(Process) returns (Process);
+    rpc List(Options) returns (stream Process);
+    rpc Success(Options) returns (stream Process);
+    rpc Failure(Options) returns (stream Process);
+}
