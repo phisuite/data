@@ -6,6 +6,7 @@ option java_outer_classname = "ProcessProto";
 
 package data;
 
+import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
 import "common.proto";
 import "event.proto";
@@ -16,41 +17,72 @@ message Process {
     string name = 2;
     string version = 3;
     string transaction = 4;
-    string started = 5;
-    string completed = 6;
 
-    message Payload {
+    Definition definition = 10;
+
+    message Definition {
+        Data input = 1;
+        Data output = 2;
+        Data error = 3;
+    }
+    message Data {
         Event event = 1;
         Entity entity = 2;
     }
-    message Error {
-        string code = 1;
-        string message = 2;
-        Event event = 3;
-    }
-    Payload in = 10;
-    Payload out = 11;
-    Error error = 12;
 }
 
-message ProcessRequest {
+message Input {
     string name = 1;
     string version = 2;
-    string transaction = 3;
+
     map<string, google.protobuf.Any> event = 10;
     map<string, google.protobuf.Any> entity = 11;
 }
 
-message ProcessResponse {
+message Output {
     string id = 1;
+
     map<string, google.protobuf.Any> event = 10;
     map<string, google.protobuf.Any> entity = 11;
 }
 
 service ProcessAPI {
-    rpc Execute(stream ProcessRequest) returns (stream ProcessResponse);
-    rpc Record(Process) returns (Process);
-    rpc List(Options) returns (stream Process);
-    rpc Success(Options) returns (stream Process);
-    rpc Failure(Options) returns (stream Process);
+    rpc Execute (stream Input) returns (stream Output) {
+        option (google.api.http) = {
+            post: "/process/v0/execute"
+            body: "*"
+        };
+    }
+}
+
+service ProcessReadAPI {
+    rpc List(Options) returns (stream Process) {
+        option (google.api.http) = {
+            get: "/process/v0/inspect"
+        };
+    }
+    rpc Success(Options) returns (stream Process) {
+        option (google.api.http) = {
+            get: "/process/v0/inspect/success"
+        };
+    }
+    rpc Failure(Options) returns (stream Process) {
+        option (google.api.http) = {
+            get: "/process/v0/inspect/failure"
+        };
+    }
+    rpc Get(Options) returns (Process) {
+        option (google.api.http) = {
+            get: "/process/v0/inspect/{id}"
+        };
+    }
+}
+
+service ProcessWriteAPI {
+    rpc Record (Process) returns (Process) {
+        option (google.api.http) = {
+            post: "/process/v0/record"
+            body: "*"
+        };
+    }
 }
