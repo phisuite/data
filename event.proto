@@ -6,6 +6,7 @@ option java_outer_classname = "EventProto";
 
 package data;
 
+import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
 import "common.proto";
 
@@ -14,11 +15,37 @@ message Event {
     string name = 2;
     string version = 3;
     string transaction = 4;
+
     map<string, google.protobuf.Any> payload = 10;
 }
 
 service EventAPI {
-    rpc Publish(Event) returns (Event);
-    rpc List(Options) returns (stream Event);
-    rpc Get(Options) returns (Event);
+    rpc Publish(Event) returns (Event) {
+        option (google.api.http) = {
+            post: "/event/v0/publish"
+            body: "*"
+        };
+    }
+}
+
+service EventReadAPI {
+    rpc List(Options) returns (stream Event) {
+        option (google.api.http) = {
+            get: "/event/v0/inspect"
+        };
+    }
+    rpc Get(Options) returns (Event) {
+        option (google.api.http) = {
+            get: "/event/v0/inspect/{id}"
+        };
+    }
+}
+
+service EventWriteAPI {
+    rpc Record (Event) returns (Event) {
+        option (google.api.http) = {
+            post: "/event/v0/record"
+            body: "*"
+        };
+    }
 }
