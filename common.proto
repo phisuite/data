@@ -1,8 +1,9 @@
 syntax = "proto3";
 
-option java_multiple_files = true;
+option go_package = "github.com/phisuite/data";
 option java_package = "com.phisuite.data";
 option java_outer_classname = "CommonProto";
+option java_multiple_files = true;
 
 package data;
 
@@ -11,4 +12,7 @@ message Options {
     string name = 2;
     string version = 3;
     string transaction = 4;
+
+    uint32 skip = 10;
+    uint32 limit = 11;
 }
